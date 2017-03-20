@@ -18,12 +18,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 func main() {
 
+	http.HandleFunc("/fortune", fortune)
 	http.HandleFunc("/", handler)
 	http.ListenAndServe(":8080", nil)
 
 }
 
-func fortune() {
+func fortune(w http.ResponseWriter, r *http.Request) {
 	
 	s1 := rand.NewSource(time.Now().UnixNano())
     r1 := rand.New(s1)
@@ -52,6 +53,6 @@ func fortune() {
 	f[19] = "Very doubtful"
 	
 	s := f[n]
-	fmt.Println(s)
+	fmt.Fprintf(w, "%s", s)
 	
 }
