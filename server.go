@@ -6,8 +6,8 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"math/rand"
+	"net/http"
 	"time"
 )
 
@@ -16,6 +16,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "hello")
 
 }
+
 func main() {
 
 	http.HandleFunc("/fortune", fortune)
@@ -27,7 +28,7 @@ func main() {
 func fortune(w http.ResponseWriter, r *http.Request) {
 
 	s1 := rand.NewSource(time.Now().UnixNano())
-    r1 := rand.New(s1)
+	r1 := rand.New(s1)
 	n := r1.Intn(20)
 
 	var f [20]string
