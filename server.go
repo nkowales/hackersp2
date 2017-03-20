@@ -19,17 +19,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	http.HandleFunc("/fortune", fortune)
-	http.HandleFunc("/", handler)
+	http.Handle("/", http.FileServer(http.Dir("./")))
 	http.ListenAndServe(":8080", nil)
 
 }
 
 func fortune(w http.ResponseWriter, r *http.Request) {
-	
+
 	s1 := rand.NewSource(time.Now().UnixNano())
     r1 := rand.New(s1)
 	n := r1.Intn(20)
-		
+
 	var f [20]string
 	f[0] = "It is certain"
 	f[1] = "It is decidedly so"
@@ -51,8 +51,8 @@ func fortune(w http.ResponseWriter, r *http.Request) {
 	f[17] = "My sources say no"
 	f[18] = "Outlook not so good"
 	f[19] = "Very doubtful"
-	
+
 	s := f[n]
 	fmt.Fprintf(w, "%s", s)
-	
+
 }
