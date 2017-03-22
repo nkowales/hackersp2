@@ -1,40 +1,34 @@
-// Hackers in the Bazaar Project 2
-// Nathan Kowaleski, Shaquille Johnson
-// 3/19/17
-
 package main
 
 import (
 	"fmt"
-	"math/rand"
-	"net/http"
-	"sync"
-	"time"
-
 	"github.com/gorilla/websocket"
+	"io/ioutil"
+	"net/http"
+	"math/rand"
+	"time"
 )
 
 type msg struct {
 	Text string
 }
 
-var wg sync.WaitGroup
-
-func handler(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Fprintf(w, "hello")
-
-}
-
 func main() {
+	http.HandleFunc("/ws", wsHandler)
+	http.HandleFunc("/", rootHandler)
 
-	http.HandleFunc("/fortune", fortune)
-	http.Handle("/", http.FileServer(http.Dir("./")))
-	http.ListenAndServe(":8080", nil)
-
+	panic(http.ListenAndServe(":8080", nil))
 }
 
-func fortune(w http.ResponseWriter, r *http.Request) {
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	content, err := ioutil.ReadFile("index.html")
+	if err != nil {
+		fmt.Println("Could not open file.", err)
+	}
+	fmt.Fprintf(w, "%s", content)
+}
+
+func wsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Origin") != "http://"+r.Host {
 		http.Error(w, "Origin not allowed", 403)
 		return
@@ -43,13 +37,11 @@ func fortune(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 	}
-	wg.Add(1)
+
 	go echo(conn)
-	wg.Wait()
 }
 
 func echo(conn *websocket.Conn) {
-	defer wg.Done()
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 	n := r1.Intn(20)
@@ -77,18 +69,18 @@ func echo(conn *websocket.Conn) {
 	f[19] = "Very doubtful"
 
 	s := f[n]
-	// fmt.Fprintf(w, "%s", s)
+	// for {
+		// m := msg{}
+		//
+		// err := conn.ReadJSON(&m)
+		// if err != nil {
+		// 	fmt.Println("Error reading json.", err)
+		// }
 
-	m := msg{"Text": s}
+		fmt.Printf("Got message: %#v\n", s)
 
-	err := conn.ReadJSON(&m)
-	if err != nil {
-		fmt.Println("Error reading json.", err)
-	}
-
-	fmt.Printf("Got message: %#v\n", m)
-
-	if err = conn.WriteJSON(m); err != nil {
-		fmt.Println(err)
-	}
+		if err := conn.WriteJSON(msg{s}); err != nil {
+			fmt.Println(err)
+		}
+	// }
 }
