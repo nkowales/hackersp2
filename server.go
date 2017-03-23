@@ -5,27 +5,24 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
+	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
+// wsHandler implements the Handler Interface
+type wsHandler struct{}
 
-	fmt.Fprintf(w, "hello")
-
+type msg struct {
+	Text string
 }
 
-func main() {
+var upgrader = websocket.Upgrader{} // use default options
 
-	http.HandleFunc("/fortune", fortune)
-	http.Handle("/", http.FileServer(http.Dir("./")))
-	http.ListenAndServe(":8080", nil)
-
-}
-
-func fortune(w http.ResponseWriter, r *http.Request) {
+func fortune() []byte {
 
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
@@ -54,6 +51,47 @@ func fortune(w http.ResponseWriter, r *http.Request) {
 	f[19] = "Very doubtful"
 
 	s := f[n]
-	fmt.Fprintf(w, "%s", s)
+	return []byte(s)
+
+}
+
+func echo(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	for {
+		mt, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+			break
+		}
+		log.Printf("recv: %s", message)
+		err = c.WriteMessage(mt, fortune())
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+	}
+}
+
+// 	//Upgrading HTTP Connection to websocket connection
+// 	wsConn, err := upgrader.Upgrade(w, r, nil)
+// 	if err != nil {
+// 	    log.Printf("error upgrading %s", err)
+// 	    return
+// 	}
+//
+// 	//handle your websockets with wsConn
+// 	wsConn.WriteJSON(msg{fortune()})
+// }
+
+func main() {
+
+	http.HandleFunc("/fortune", echo)
+	http.Handle("/", http.FileServer(http.Dir("./")))
+	http.ListenAndServe(":8080", nil)
 
 }
