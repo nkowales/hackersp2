@@ -5,8 +5,8 @@
 package main
 
 import (
-	"math/rand"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
