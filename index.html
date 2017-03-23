@@ -48,7 +48,7 @@
                     <div>
                         <form>
                             <label for="numberfield">So you say it</label>
-                            <input type="text" id="numberfield" placeholder="so it shall be."/><br />
+                            <input style="color: black;" type="text" id="field" placeholder="so it shall be."/><br />
                             <button type="button" id="sendBtn">Send</button>
                         </form>
                     </div>
@@ -68,7 +68,7 @@
                 ws = initWS();
             }
             function initWS() {
-                var socket = new WebSocket("ws://localhost:8080/fortune"),
+                var socket = new WebSocket("ws://" + location.host + "/fortune"),
                     container = $("#container")
                 socket.onopen = function() {
                     console.log("Socket is open");
@@ -84,7 +84,7 @@
             }
             $("#sendBtn").click(function (e) {
                 e.preventDefault();
-                ws.send(JSON.stringify({ Num: parseInt($("#numberfield").val()) }));
+                ws.send( $("#field").val() );
             });
         });
     </script>
