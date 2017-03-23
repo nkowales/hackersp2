@@ -1,1 +1,1 @@
-web: eight-ball
+web: go run server.go
