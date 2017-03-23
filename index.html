@@ -42,7 +42,7 @@
                     <div class="intro-text">
                         <h1 class="name">Eight Ball</h1>
                         <hr class="star-light">
-                        <div id="container"><span class="skills">What do you want to know?</span></div>
+                        <div id="container"><span id="span_container" class="skills">What do you want to know?</span></div>
                     </div>
                     <br>
                     <div>
@@ -69,13 +69,14 @@
             }
             function initWS() {
                 var socket = new WebSocket("ws://" + location.host + "/fortune"),
-                    container = $("#container")
+                    container = $("#span_container")
                 socket.onopen = function() {
                     console.log("Socket is open");
                 };
                 socket.onmessage = function (e) {
-                    container.empty();
-                    container.append("<span class=\"skills\">" + e.data + "</span>");
+                    container.animate({opacity:0}, function(){
+                      container.text(e.data).animate({opacity:1});
+                    });
                 }
                 socket.onclose = function () {
                     console.log("Socket closed");
@@ -83,8 +84,15 @@
                 return socket;
             }
             $("#sendBtn").click(function (e) {
-                e.preventDefault();
-                ws.send( $("#field").val() );
+              e.preventDefault();
+              ws.send( $("#field").val() );
+            });
+            $('#field').keypress(function(e) {
+              console.log(e.which);
+              if (e.which == 13) {
+                 e.preventDefault();
+                 ws.send( $("#field").val() );
+               }
             });
         });
     </script>
